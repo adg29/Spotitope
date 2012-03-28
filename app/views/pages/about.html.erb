@@ -1,0 +1,45 @@
+<script>
+
+JSON.prettify = function(json) {
+  return JSON.stringify(json, null, '\t');
+}
+function log(msg) {
+  if (console && console.log) {
+    console.log(msg)
+  }
+}
+
+var Workspace = Backbone.Router.extend({
+          routes: {
+            '/search/:service/:query': "searchService"
+          },
+
+          searchService: function(service,query){
+
+            var method = "track";
+            log('Searching for ' + method + ' called ' + query);
+            $.spotifydata(method, query, function(data) {
+              $('#search-results').show().find('pre').text(JSON.prettify(data));
+            })
+
+          }
+});
+
+</script>
+<h2>We like to be inspired by music. </h2>
+<h3>Start with a search for <b>music</b> that inspires you.</h3>
+
+<form class="well form-search" id="search" method="get">
+  <label for="method">Method</label>
+  <select name="method">
+    <option value="track">Track</option>
+    <option value="Album">Album</option>
+    <option value="artist">Artist</option>
+  </select>
+  <label for="query">Query</label>
+  <input type="text" name="query" placeholder="Shout" id="query" class="input-medium search-query" >
+  <input type="submit" name="search" value="Search" id="search" class="btn">
+</form>
+
+
+<code class="block" id="search-results"><pre></pre></code>
