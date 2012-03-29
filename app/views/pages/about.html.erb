@@ -5,14 +5,15 @@
   }
 
   .result{
+    color: #fff;
+    background: #000;
     width: 110px;
     height: 110px;
+    padding: 8px;
     margin: 5px;
     float: left;
     overflow: hidden;
     position: relative;
-    background: #888;
-    color: #222;
     -webkit-border-top-right-radius: 1.2em;
         -moz-border-radius-topright: 1.2em;
             border-top-right-radius: 1.2em;
@@ -92,13 +93,13 @@ $(function(){
     },
 
     searchSpotify: function(method,query){
-
-        console.log( method );
+        log('Searching for ' + method + ' called ' + query);
         $('#query').val(query);
         $('#method').val(method);
 
-      var method = "track";
-      log('Searching for ' + method + ' called ' + query);
+        var method = "track";
+        log('defaulting to track');
+
       $.spotifydata(method, query, function(data) {
         console.log( data.tracks.length );
         Results.resetSpotifyData(data);
@@ -148,8 +149,6 @@ $(function(){
       instance = this;
       var new_data = '';
       _.each( spotifyData.tracks, function( t,i ){
-        console.log(i);
-        console.log(t);
         var track_d = t.name;
         var artist_d = t.artists[0].name;
         new_data += instance.spotifyResult({track: track_d,artist: artist_d});
