@@ -1,4 +1,5 @@
 Spotitope::Application.routes.draw do
+  match 'pages/about/*feroute' => 'high_voltage/pages#show', :id => 'about'
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
