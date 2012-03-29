@@ -12,6 +12,8 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require jquery.isotope
+//= require handlebars
 //= require twitter/bootstrap
 //= require backbone/json2 
 //= require backbone/underscore 

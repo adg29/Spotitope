@@ -8,12 +8,20 @@
 /.bundle
 
 # Ignore the default SQLite database.
-/db/*.sqlite3
+/db/.
 
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
 
-*.swp
 
+.bundle
+db/*.sqlite3
+log/*.log
+tmp/
+.sass-cache/
+
+*.swp
+.rvmrc
+config/database.yml
 .DS_Store
