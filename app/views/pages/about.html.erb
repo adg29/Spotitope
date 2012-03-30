@@ -74,7 +74,7 @@
   }
 </style>
 
-<script>
+<script type="text/javascript">
 
 JSON.prettify = function(json) {
   return JSON.stringify(json, null, '\t');
@@ -84,6 +84,21 @@ function log(msg) {
     console.log(msg)
   }
 }
+
+var client_id = 'NSIPH2PMNNT54J5RANXTVINNQTV3HA1OGFECTM1ZUFTTQ5GT';
+var callback_url = 'http://<%= request.env['HTTP_HOST'] %>/pages/about';
+
+/* Attempt to retrieve access token from URL. */
+if ($.bbq.getState('access_token')) {
+  var token = $.bbq.getState('access_token');
+  $.bbq.pushState({}, 2)
+} else if ($.bbq.getState('error')) {
+} else {
+  /* Redirect for foursquare authentication. */
+  window.location.href = 'https://foursquare.com/oauth2/authenticate?client_id=' + client_id
+  + '&response_type=token&redirect_uri=' + callback_url;
+}  
+
 
 
 $(function(){
