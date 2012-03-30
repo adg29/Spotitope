@@ -91,7 +91,7 @@ var callback_url = 'http://<%= request.env['HTTP_HOST'] %>/pages/about';
 /* Attempt to retrieve access token from URL. */
 if ($.bbq.getState('access_token')) {
   var token = $.bbq.getState('access_token');
-  $.bbq.pushState({}, 2)
+  //$.bbq.pushState({}, 2)
 } else if ($.bbq.getState('error')) {
 } else {
   /* Redirect for foursquare authentication. */
