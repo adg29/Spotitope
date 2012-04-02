@@ -7,6 +7,7 @@
   <![endif]-->
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
+  <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script> 
   <%= csrf_meta_tags %>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -32,9 +33,17 @@
 </div>
 <div class="container">
   <div class="row">
-    <div class="span9"><%= yield %></div>
-    <div class="span3">
-      <h2>Everwhere we go.</h2>
+    <div class="span7"><%= yield %></div>
+    <div class="span5" id="go_container">
+      <h2>Inspired everwhere we go.</h2>
+      <h3 id="inspired_sub">
+      Check in with foursquare and walkman.fm
+      </h3>
+      <a id="foursquare_login" name="Foursquare Login">
+      <img id="foursquare_button" src="/assets/fs-checkinon-white.png"/>
+      </a>
+      <div class="well" id="map_canvas" style="width: 510px; height: 440px;"></div>
+      
     </div>
   </div>
 </div>
