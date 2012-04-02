@@ -1,4 +1,8 @@
 <style>
+  .spotify-result.ui-draggable{
+    z-index: 300;
+  }
+
   #inspired_sub{
   }
 
@@ -45,7 +49,7 @@
     display: block;
   }
 
-  .result{
+  .spotify-result{
     color: #fff;
     background: #000;
     width: 110px;
@@ -60,7 +64,7 @@
             border-top-right-radius: 1.2em;
   }
 
-  .result h3{
+  .spotify-result h3{
     line-height: 14px;
   }
 
@@ -143,7 +147,6 @@ if ($.bbq.getState('access_token')) {
 
 /* HTML 5 geolocation. */
 navigator.geolocation.getCurrentPosition(function(data) {
-  log(data);
   lat = data['coords']['latitude'];
   lng = data['coords']['longitude'];
   /* Create map. */
@@ -153,7 +156,6 @@ navigator.geolocation.getCurrentPosition(function(data) {
   }); 
   var lat = 40.742234, lng = -73.993767;
   map.setCenter(new google.maps.LatLng( parseFloat(lat), parseFloat(lng) ));
-  log( map.getCenter() );
 });
 
 
@@ -171,6 +173,7 @@ $(function(){
             map: map,
             title: venues[i]['venue']['name']
           });
+          log( venues[i]['venue']['name'] );
         }       
       });
 
@@ -186,8 +189,6 @@ $(function(){
       });
 
     }else{
-      log('set href');
-      log( $('#foursquare_login') );
       /* Redirect for foursquare authentication. */
       $('#foursquare_login').attr('href','https://foursquare.com/oauth2/authenticate?client_id=' + client_id + '&response_type=token&redirect_uri=' + callback_url);
     }
@@ -200,13 +201,13 @@ $(function(){
 
     searchSpotify: function(method,query){
         log('Searching for ' + method + ' called ' + query);
-        $('#query').val(query);
+        $('#query').val(decodeURIComponent(query));
         $('#method').val(method);
 
         var method = "track";
         log('defaulting to track');
 
-      $.spotifydata(method, query, function(data) {
+      $.spotifydata(method, decodeURIComponent(query), function(data) {
         Results.resetSpotifyData(data);
         Results.renderSpotifyData();
       })
@@ -238,7 +239,7 @@ $(function(){
     initialize: function(){
       $('#results-isotope').isotope({
         // options
-        itemSelector : '.result',
+        itemSelector : '.spotify-result',
         layoutMode : 'fitRows',
         filter: ''
       });
@@ -248,7 +249,7 @@ $(function(){
       spotifyData=data;
     },
     renderSpotifyData: function(){
-      $('#results-isotope').fadeOut().isotope('remove',$('.result')).fadeIn();
+      $('#results-isotope').fadeOut().isotope('remove',$('.spotify-result')).fadeIn();
       $('#results-json').show().find('pre').text(JSON.prettify(spotifyData));
       instance = this;
       var new_data = '';
@@ -259,6 +260,14 @@ $(function(){
         
       });
       $('#results-isotope').isotope( 'insert', $(new_data) );
+      $('.spotify-result').draggable({ 
+        appendTo: 'body',
+        containment: 'window',
+        helper: function(e){
+          var copy = instance.spotifyResult({track: $(this).children('h3').html(), artist: $(this).children('h4').html()}) 
+          return copy;
+        }
+      });
     }
   });
 
@@ -293,7 +302,7 @@ $(function(){
 </div>
 
 <script id="spotify-result-template" type="text/x-handlebars-template">
-  <div class="spotify result">
+  <div class="spotify-result">
     <h3>{{track}}</h3>
     <h4>by {{artist}}</h4>
   </div>
