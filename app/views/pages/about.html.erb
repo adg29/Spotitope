@@ -1,4 +1,5 @@
 <style>
+
   .spotify-result.ui-draggable{
     z-index: 300;
   }
@@ -62,6 +63,14 @@
     -webkit-border-top-right-radius: 1.2em;
         -moz-border-radius-topright: 1.2em;
             border-top-right-radius: 1.2em;
+  }
+  .spotify-result.circle{
+   width: 140px;
+   height: 140px;
+   background: red; 
+   -moz-border-radius: 70px; 
+   -webkit-border-radius: 70px; 
+   border-radius: 70px;
   }
 
   .spotify-result h3{
@@ -134,7 +143,7 @@ var client_id = 'NSIPH2PMNNT54J5RANXTVINNQTV3HA1OGFECTM1ZUFTTQ5GT';
 var callback_url = 'http://<%= request.env['HTTP_HOST'] %>/pages/about';
 var foursquare_token = '';
 
-var map;
+var map, overlay;
 var lat = 40.742234, lng = -73.993767;
 
 /* Attempt to retrieve access token from URL. */
@@ -156,6 +165,15 @@ navigator.geolocation.getCurrentPosition(function(data) {
   }); 
   var lat = 40.742234, lng = -73.993767;
   map.setCenter(new google.maps.LatLng( parseFloat(lat), parseFloat(lng) ));
+  overlay = new google.maps.OverlayView();
+  overlay.draw = function() {};
+  overlay.setMap(map); // 'map' is new google.maps.Map(...)
+  google.maps.event.addListener(map, 'mousemove', function() {
+      var projection = overlay.getProjection(); 
+  }); 
+  google.maps.event.addListener(map, 'mouseout', function() {
+      var projection = overlay.getProjection(); 
+  }); 
 });
 
 
@@ -173,12 +191,12 @@ $(function(){
             map: map,
             title: venues[i]['venue']['name']
           });
-          log( venues[i]['venue']['name'] );
+          //log( venues[i]['venue']['name'] );
         }       
       });
 
       $.getJSON('https://api.foursquare.com/v2/users/self?v=20120402&oauth_token=' + foursquare_token, {}, function(data) {
-        log( data );
+        //log( data );
         var user;
         if( user = data['response']['user'] ){
           $('#inspired_sub').html('Influence Foursquare venues via Walkman.fm');
@@ -262,10 +280,39 @@ $(function(){
       $('#results-isotope').isotope( 'insert', $(new_data) );
       $('.spotify-result').draggable({ 
         appendTo: 'body',
-        containment: 'window',
+        containment: 'document',
         helper: function(e){
           var copy = instance.spotifyResult({track: $(this).children('h3').html(), artist: $(this).children('h4').html()}) 
           return copy;
+        },
+        stop: function(e) {
+          log( e.originalEvent );
+          var point=new google.maps.Point(e.originalEvent.pageX-$('#map_canvas').position().left ,e.originalEvent.pageY-$('#map_canvas').position().top);
+          log( point );
+          var ll=overlay.getProjection().fromContainerPixelToLatLng(point);
+          var marker = new google.maps.Marker({
+            position: ll, 
+            map: map,
+            icon:'/assets/poweredByFoursquare_16x16.png'
+        });
+
+        },
+        drag: function( e, ui ){
+         var dragged_in_map =  
+            (
+            ui.position.left > $('#map_canvas').position().left &&
+            ui.position.left < $('#map_canvas').position().left
+              +$('#map_canvas').outerWidth() &&
+            ui.position.top > $('#map_canvas').position().top &&
+            ui.position.top < $('#map_canvas').position().top + 
+              +$('#map_canvas').outerHeight()
+            )
+          if( dragged_in_map ){
+            $('.spotify-result.ui-draggable-dragging').addClass('circle');
+          }else{
+            $('.spotify-result.ui-draggable-dragging').removeClass('circle');
+          }
+
         }
       });
     }
