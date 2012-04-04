@@ -38,6 +38,8 @@
       <h2>Inspired everwhere we go.</h2>
       <h3 id="inspired_sub">
       Check in with foursquare and walkman.fm
+      <%= link_to "Sign in with Last.fm", user_omniauth_authorize_path(:lastfm) %>
+      
       </h3>
       <a id="foursquare_login" name="Foursquare Login">
       <img id="foursquare_button" src="/assets/fs-checkinon-white.png"/>

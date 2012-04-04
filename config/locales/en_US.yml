@@ -1,7 +1,7 @@
 # Sample localization file for English. Add more files in this directory for other locales.
 # See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
-"en": 
+"en-US": 
   hello: "Hello world"
   attributes:
     user:  
@@ -33,4 +33,3 @@
             less_than_or_equal_to: "must be less than or equal to {{count}}"
             odd: "must be odd"
             even: "must be even"
-
