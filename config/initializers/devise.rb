@@ -213,6 +213,8 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
   config.omniauth :lastfm, "4eb6d017164c89d78e793a8ae0677acc", "740627bd88262e225f958367aecd2f7a"
+  config.omniauth :foursquare , "NSIPH2PMNNT54J5RANXTVINNQTV3HA1OGFECTM1ZUFTTQ5GT", "BWY3Q0EDD2GMMTCQ5CKNMBR5OHWRDJMCGIJPGXGPRPMY3ZMD"
+  
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
