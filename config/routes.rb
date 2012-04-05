@@ -1,7 +1,6 @@
 Spotitope::Application.routes.draw do
-  devise_for :users, :controllers => { :omniauth_callbacks => "authentications/create", :registrations => 'registrations' }
   #match '/auth/:provider/callback' => 'authentications#create'  
-
+  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks", :registrations => 'registrations' }
   resources :authentications
 
   match 'pages/about/*route' => 'high_voltage/pages#show', :id => 'about'
@@ -65,3 +64,4 @@ Spotitope::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
 end
+
