@@ -1,2 +1,1 @@
-environment_id="ruby-1.9.2-p180@prototype"
-rvm use ruby-1.9.2-p290@prototype
+rvm use ruby-1.9.2-p290@rails3.1

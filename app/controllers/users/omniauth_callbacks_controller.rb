@@ -1,7 +1,13 @@
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   
   def action_missing(provider)
-    if !User.authentications.index(provider).nil?
+    logger.debug('missing')
+    logger.debug( provider )
+    logger.debug( User.omniauth_providers )
+    logger.debug( provider.parameterize.underscore.to_sym )
+    logger.debug( !User.omniauth_providers.index(provider.parameterize.underscore.to_sym).nil? )
+    if !User.omniauth_providers.index(provider).nil?
+    logger.debug('omniauth providers not available')
       omniauth = request.env["omniauth.auth"]
       #omniauth = env["omniauth.auth"]
     
@@ -11,16 +17,18 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
          redirect_to edit_user_registration_path
       else
         authentication = Authentication.where(:provider => omniauth['provider'], :uid => omniauth['uid']).first
-        puts"@@@@AUTHEN@@@@#{authentication}" 
+        logger.debug("@@@@AUTHEN@@@@#{authentication}" )
         if authentication
           flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => omniauth['provider']
           sign_in_and_redirect(:user, authentication.user)
         else
-          puts"@@@MANIVANNAN@@"
+          logger.debug("@@@MANIVANNAN@@")
           #create a new user
           unless omniauth.recursive_find_by_key("email").blank?
+            logger.debug('user find or init')
             user = User.find_or_initialize_by(:email => omniauth.recursive_find_by_key("email"))
           else
+            logger.debug('user new')
             user = User.new
           end
           
@@ -29,13 +37,17 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
           if user.save
             flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => omniauth['provider'] 
+            logger.debug('user save')
             sign_in_and_redirect(:user, user)
           else
             session[:omniauth] = omniauth.except('extra')
+            logger.debug('new user reg')
             redirect_to new_user_registration_url
           end
         end
       end
+    else
+      logger.debug('elseeee')
     end
   end
 end
