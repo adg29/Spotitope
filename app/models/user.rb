@@ -35,6 +35,22 @@ class User < ActiveRecord::Base
     end
   end
 
+
+  def self.find_for_facebook_oauth(auth, signed_in_resource=nil)
+    logger.debug('find for facebook oauth')
+    user = User.where(:provider => auth.provider, :uid => auth.uid).first
+    unless user
+      user = User.create(name:auth.extra.raw_info.name,
+                           provider:auth.provider,
+                           uid:auth.uid,
+                           email:auth.info.email,
+                           password:Devise.friendly_token[0,20]
+                           )
+    end
+    user
+  end  
+
+
 =begin
   Notice that Devise RegistrationsController by default calls "User.new_with_session" before building a resource. 
   This means that, if we need to copy data from session whenever a user is initialized before sign up, 
