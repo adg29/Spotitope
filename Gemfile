@@ -43,4 +43,5 @@ gem 'twitter-bootstrap-rails', :git => 'git://github.com/seyhunak/twitter-bootst
 gem 'devise'
 gem 'omniauth-lastfm'
 gem 'omniauth-foursquare'
+gem 'omniauth-facebook'
 gem 'powder'

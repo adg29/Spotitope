@@ -92,6 +92,8 @@ GEM
     omniauth (1.0.3)
       hashie (~> 1.2)
       rack
+    omniauth-facebook (1.2.0)
+      omniauth-oauth2 (~> 1.0.0)
     omniauth-foursquare (0.0.7)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.0)
@@ -167,6 +169,7 @@ DEPENDENCIES
   high_voltage
   jquery-rails
   mysql2
+  omniauth-facebook
   omniauth-foursquare
   omniauth-lastfm
   powder

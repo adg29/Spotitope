@@ -214,6 +214,8 @@ Devise.setup do |config|
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
   config.omniauth :lastfm, "4eb6d017164c89d78e793a8ae0677acc", "740627bd88262e225f958367aecd2f7a"
   config.omniauth :foursquare , "NSIPH2PMNNT54J5RANXTVINNQTV3HA1OGFECTM1ZUFTTQ5GT", "BWY3Q0EDD2GMMTCQ5CKNMBR5OHWRDJMCGIJPGXGPRPMY3ZMD"
+  config.omniauth :facebook , "431178096936169", "acf5008527ef85ac9ec5349aaeb96aec"
+
   
 
   # ==> Warden configuration
