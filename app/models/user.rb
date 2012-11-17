@@ -2,7 +2,7 @@ class User < ActiveRecord::Base
   has_many :authentications
   # Include default devise modules. Others available are:
   # :token_authenticatable, :encryptable, :confirmable, :lockable, :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable,
+  devise :database_authenticatable, :registerable, :confirmable,
          :recoverable, :rememberable, :trackable, :omniauthable
 
   # Virtual attribute for authenticating by either username or email
@@ -11,11 +11,35 @@ class User < ActiveRecord::Base
   # Setup accessible (or protected) attributes for your model
   attr_accessible :login, :username, :email, :password, :password_confirmation, :remember_me
 
+def self.create_user(registration_hash)
+    logger.info "Creating new user with registration hash: #{registration_hash.to_yaml}"
+    unless registration_hash or resigration_hash.empty?
+      return nil
+    end
+    user = User.new
+    user.email = registration_hash[:email]
+    if registration_hash[:password]
+      user.password = registration_hash[:password]
+    else
+      user.password = Devise.friendly_token[0,20]
+    end
+    user.password_confirmation = user.password
+
+    # custom app code here...
+
+
+    if registration_hash[:skip_confirmation] == true
+      user.confirm!
+    end
+
+    user    
+end
+
+
   def apply_omniauth(omniauth)
     self.email = omniauth['user_info']['email'] if email.blank?
     authentications.build(:provider => omniauth['provider'], :uid => omniauth['uid'])
   end
-
   
   def password_required?
     (authentications.empty? || !password.blank?) && super
@@ -37,7 +61,7 @@ class User < ActiveRecord::Base
 
 
   def self.find_for_facebook_oauth(auth, signed_in_resource=nil)
-    logger.debug('find for facebook oauth')
+    logger.debug('find for facebook oauthV')
     user = User.where(:provider => auth.provider, :uid => auth.uid).first
     unless user
       user = User.create(name:auth.extra.raw_info.name,

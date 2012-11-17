@@ -1,65 +1,214 @@
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
-  
-  def facebook
-      # You need to implement the method below in your model (e.g. app/models/user.rb)
-      @user = User.find_for_facebook_oauth(request.env["omniauth.auth"], current_user)
+  before_filter { @omniauth_hash = env["omniauth.auth"] }
 
-      if @user.persisted?
-        sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
-        set_flash_message(:notice, :success, :kind => "Facebook") if is_navigational_format?
-      else
-        session["devise.facebook_data"] = request.env["omniauth.auth"]
-        redirect_to new_user_registration_url
+  # This method is responsible to create a registration_hash given an
+  # omniauth_hash
+  # schema: https://github.com/intridea/omniauth/wiki/Auth-Hash-Schema
+  def self.build_registration_hash(omniauth_hash={})
+    logger.debug('self.build_registration_hash')
+    logger.debug(omniauth_hash)
+    logger.debug(@omniauth_hash)
+    if (omniauth_hash["provider"].downcase.eql?("facebook"))
+      logger.debug('facebook on omniauth hash provider downcase')
+      provider  = "facebook"
+      # catch any excpetions thrown by code just to make sure we can continue even if parts of the omnia_has are missing
+      begin
+        first_name = omniauth_hash['user_info']['first_name']
+        last_name  = omniauth_hash['user_info']['last_name']
+        sex        = omniauth_hash.fetch('extra', {}).fetch('user_hash',{})['gender']
+        birthday   = Date.strptime(omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['birthday'],'%m/%d/%Y') if omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['birthday']
+        if omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']
+          utc_offset_in_hours = (omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']).to_i 
+          time_zone = (ActiveSupport::TimeZone[utc_offset_in_hours]).name
+        else
+          time_zone = nil
+        end
+        locale    = omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['locale'] 
+        home_town = omniauth_hash.fetch('extra', {}).fetch('user_hash', {}).fetch('location', {})['name']
+        if omniauth_hash.fetch('user_info', {})['image']
+          photo_url = (omniauth_hash.fetch('user_info', {})['image']).gsub("=square","=large")   #http://graph.facebook.com/531564247/picture?type=square
+        else
+          photo_url = nil
+        end
+      rescue => ex
+        logger.error("Error while parsing facebook auth hash: #{ex.class}: #{ex.message}")
+        sex       = nil
+        birthday  = nil
+        time_zone = nil
+        locale    = nil
+        home_town = nil
+        photo_url = nil  
       end
+    elsif omniauth_hash['uid'].downcase.include?("google.com")
+      provider  = "google"
+      if omniauth_hash['user_info']['first_name'] and omniauth_hash['user_info']['last_name']
+        first_name = omniauth_hash['user_info']['first_name'] 
+        last_name  = omniauth_hash['user_info']['last_name']
+      elsif omniauth_hash['user_info']['name'] 
+        first_name  = omniauth_hash['user_info']['name'].split(' ')[0]
+        last_name  = omniauth_hash['user_info']['name'].split(' ')[1]
+      else
+        first_name = nil
+        last_name  = nil
+      end
+      sex       = nil
+      birthday  = nil
+      time_zone = nil
+      locale    = nil
+      home_town = nil
+      photo_url = nil
+    elsif omniauth_hash['uid'].downcase.include?("yahoo.com")
+      provider = "yahoo"
+      if omniauth_hash['user_info']['first_name'] and omniauth_hash['user_info']['last_name']
+        first_name = omniauth_hash['user_info']['first_name'] 
+        last_name  = omniauth_hash['user_info']['last_name']
+      elsif omniauth_hash['user_info']['name'] 
+        first_name  = omniauth_hash['user_info']['name'].split(' ')[0]
+        last_name  = omniauth_hash['user_info']['name'].split(' ')[1]
+      else
+        first_name = nil
+        last_name  = nil
+      end
+      sex       = nil
+      birthday  = nil
+      time_zone = nil
+      locale    = nil
+      home_town = nil
+      photo_url = nil
+    elsif omniauth_hash['uid'].downcase.include?("aol.com")
+      if omniauth_hash['user_info']['first_name'] and omniauth_hash['user_info']['last_name']
+        first_name = omniauth_hash['user_info']['first_name'] 
+        last_name  = omniauth_hash['user_info']['last_name']
+      elsif omniauth_hash['user_info']['name'] 
+        first_name  = omniauth_hash['user_info']['name'].split(' ')[0]
+        last_name  = omniauth_hash['user_info']['name'].split(' ')[1]
+      else
+        first_name = nil
+        last_name  = nil
+      end
+      provider = "aol"
+      sex       = nil
+      birthday  = nil
+      time_zone = nil
+      locale    = nil
+      home_town = nil
+      photo_url = nil     
+    else
+      provider = "open_id"
+      if omniauth_hash['user_info']['first_name'] and omniauth_hash['user_info']['last_name']
+        first_name = omniauth_hash['user_info']['first_name'] 
+        last_name  = omniauth_hash['user_info']['last_name']
+      elsif omniauth_hash['user_info']['name'] 
+        first_name  = omniauth_hash['user_info']['name'].split(' ')[0]
+        last_name  = omniauth_hash['user_info']['name'].split(' ')[1]
+      else
+        first_name = nil
+        last_name  = nil
+      end
+      sex       = nil
+      birthday  = nil
+      time_zone = nil
+      locale    = nil
+      home_town = nil
+      photo_url = nil
+    end
+
+    logger.debug('creating HASHHHHH')
+    logger.debug(omniauth_hash.inspect)
+   h = {
+      :provider   => provider,
+      :email      => omniauth_hash['info']['email'],
+      :profile_attributes => {
+         :first_name => first_name ,
+         :last_name  => last_name,
+         :avatar_url  => photo_url,
+         :sex        => sex,
+         :birthday   => birthday,
+         :time_zone  => time_zone,
+         :locale     => locale,
+         :location  => home_town
+      }
+    }
   end
 
-  def action_missing(provider)
-    logger.debug('missing')
-    logger.debug( provider )
-    logger.debug( User.omniauth_providers )
-    logger.debug( provider.parameterize.underscore.to_sym )
-    logger.debug( !User.omniauth_providers.index(provider.parameterize.underscore.to_sym).nil? )
-    omniauth_providers = User.omniauth_providers.collect {|p| p.to_s }
-    if !omniauth_providers.index(provider).nil?
-    logger.debug('omniauth providers not available')
-      omniauth = request.env["omniauth.auth"]
-      #omniauth = env["omniauth.auth"]
-    
-      if current_user #or User.find_by_email(auth.recursive_find_by_key("email"))
-        current_user.authentications.find_or_create_by_provider_and_uid(omniauth['provider'], omniauth['uid'])
-         flash[:notice] = "Authentication successful"
-         redirect_to edit_user_registration_path
-      else
-        authentication = Authentication.where(:provider => omniauth['provider'], :uid => omniauth['uid']).first
-        logger.debug("@@@@AUTHEN@@@@#{authentication}" )
-        if authentication
-          flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => omniauth['provider']
-          sign_in_and_redirect(:user, authentication.user)
-        else
-          logger.debug("@@@MANIVANNAN@@")
-          #create a new user
-          if omniauth.recursive_find_by_key("email").blank?
-            logger.debug('user new')
-            user = User.new
-          else
-            logger.debug('user find or init')
-            user = User.find_or_initialize_by(:email => omniauth.recursive_find_by_key("email"))
-          end
-          
-          user.apply_omniauth(omniauth)
-          #user.confirm! #unless user.email.blank?
+  def process_callback
 
-          if user.save
-            flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => omniauth['provider'] 
-            logger.debug('user save')
-            sign_in_and_redirect(:user, user)
-          else
-            session[:omniauth] = omniauth.except('extra')
-            logger.debug('new user reg')
-            redirect_to new_user_registration_url
-          end
-        end
+    # The registration hash isolates the rest of the code from learning all the different structures 
+    # of the omnia_hash
+    registration_hash = Users::OmniauthCallbacksController.build_registration_hash(@omniauth_hash)
+    logger.debug(registration_hash.to_yaml)
+
+    # Set the @user to nil 
+    @user = nil 
+
+    # Find if an authentication token for this provider and user id already exists
+    authentication = Authentication.find_by_provider_and_uid(@omniauth_hash['provider'], @omniauth_hash['uid'])
+    if authentication     # We found an authentication
+      if user_signed_in? && (authentication.user.id != current_user.id)
+        flash[:error] = I18n.t "controllers.omniauth_callbacks.process_callback.error.account_already_taken", 
+        :provider => registration_hash[:provider].capitalize, 
+        :account => registration_hash[:email]
+        redirect_to edit_user_account_path(current_user)
+        return
+      end
+    else
+      # We could not find the authentication than create one
+      authentication = Authentication.new(:provider => @omniauth_hash['provider'], :uid => @omniauth_hash['uid'])
+      if user_signed_in?   
+        authentication.user = current_user
+      else
+        registration_hash[:skip_confirmation] = true
+        authentication.user = User.find_by_email(registration_hash[:email]) || User.create_user(registration_hash)
       end
     end
+
+    @user = authentication.user
+    # save the authentication 
+    authentication.token = @omniauth_hash
+    authentication.provider = registration_hash[:provider]
+    authentication.user_id = registration_hash[:email]
+
+    if !authentication.save
+      logger.error(authentication.errors)
+    end
+
+    # If a user is signed in then he is trying to link a new account
+    if user_signed_in?
+      if authentication.persisted? # This was a linking operation so send back the user to the account edit page  
+        flash[:success] = I18n.t "controllers.omniauth_callbacks.process_callback.success.link_account", 
+                                :provider => registration_hash[:provider].capitalize, 
+                                :account => registration_hash[:email]
+      else
+        flash[:error] = I18n.t "controllers.omniauth_callbacks.process_callback.error.link_account", 
+                               :provider => registration_hash[:provider].capitalize, 
+                               :account => registration_hash[:email],
+                               :errors =>authentication.errors
+      end  
+      redirect_to edit_user_account_path(current_user)
+    else
+      # This was a sign in operation so sign in the user and redirect it to his home page
+      if @user.persisted? && authentication.persisted?
+        flash[:success] = I18n.t "controllers.omniauth_callbacks.process_callback.success.sign_in", 
+        :provider => registration_hash[:provider].capitalize, 
+        :account => registration_hash[:email]
+        sign_in_and_redirect(:user,@user)
+      else
+        session['registration_hash'] = registration_hash
+        flash[:error] = I18n.t "controllers.omniauth_callbacks.process_callback.error.sign_in", 
+        :provider => registration_hash[:provider].capitalize, 
+        :account => registration_hash[:email]
+
+        redirect_to new_registration_users_url
+
+      end
+    end
+  end
+
+  def facebook
+    process_callback  
+  end
+
+  def gmail
+    process_callback  
   end
 end
