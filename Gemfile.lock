@@ -106,6 +106,8 @@ GEM
       omniauth (~> 1.0)
     orm_adapter (0.0.7)
     polyglot (0.3.3)
+    powder (0.1.8)
+      thor (>= 0.11.5)
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -167,6 +169,7 @@ DEPENDENCIES
   mysql2
   omniauth-foursquare
   omniauth-lastfm
+  powder
   rails (= 3.2.2)
   sass-rails (~> 3.2.3)
   twitter-bootstrap-rails!

@@ -6,7 +6,8 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     logger.debug( User.omniauth_providers )
     logger.debug( provider.parameterize.underscore.to_sym )
     logger.debug( !User.omniauth_providers.index(provider.parameterize.underscore.to_sym).nil? )
-    if !User.omniauth_providers.index(provider).nil?
+    omniauth_providers = User.omniauth_providers.collect {|p| p.to_s }
+    if !omniauth_providers.index(provider).nil?
     logger.debug('omniauth providers not available')
       omniauth = request.env["omniauth.auth"]
       #omniauth = env["omniauth.auth"]
@@ -24,12 +25,12 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         else
           logger.debug("@@@MANIVANNAN@@")
           #create a new user
-          unless omniauth.recursive_find_by_key("email").blank?
-            logger.debug('user find or init')
-            user = User.find_or_initialize_by(:email => omniauth.recursive_find_by_key("email"))
-          else
+          if omniauth.recursive_find_by_key("email").blank?
             logger.debug('user new')
             user = User.new
+          else
+            logger.debug('user find or init')
+            user = User.find_or_initialize_by(:email => omniauth.recursive_find_by_key("email"))
           end
           
           user.apply_omniauth(omniauth)
@@ -46,8 +47,6 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           end
         end
       end
-    else
-      logger.debug('elseeee')
     end
   end
 end
