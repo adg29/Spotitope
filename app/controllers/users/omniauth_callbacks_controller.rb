@@ -13,31 +13,24 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       provider  = "facebook"
       # catch any excpetions thrown by code just to make sure we can continue even if parts of the omnia_has are missing
       begin
-        first_name = omniauth_hash['user_info']['first_name']
-        last_name  = omniauth_hash['user_info']['last_name']
-        sex        = omniauth_hash.fetch('extra', {}).fetch('user_hash',{})['gender']
-        birthday   = Date.strptime(omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['birthday'],'%m/%d/%Y') if omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['birthday']
-        if omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']
-          utc_offset_in_hours = (omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']).to_i 
-          time_zone = (ActiveSupport::TimeZone[utc_offset_in_hours]).name
-        else
-          time_zone = nil
-        end
-        locale    = omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['locale'] 
-        home_town = omniauth_hash.fetch('extra', {}).fetch('user_hash', {}).fetch('location', {})['name']
-        if omniauth_hash.fetch('user_info', {})['image']
-          photo_url = (omniauth_hash.fetch('user_info', {})['image']).gsub("=square","=large")   #http://graph.facebook.com/531564247/picture?type=square
+        first_name = omniauth_hash['info']['first_name']
+        last_name  = omniauth_hash['info']['last_name']
+        sex        = omniauth_hash.fetch('extra', {}).fetch('raw)info',{})['gender']
+        birthday   = Date.strptime(omniauth_hash.fetch('extra', {}).fetch('raw_info', {})['birthday'],'%m/%d/%Y') if omniauth_hash.fetch('extra', {}).fetch('raw_info', {})['birthday']
+        #if omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']
+        #  utc_offset_in_hours = (omniauth_hash.fetch('extra', {}).fetch('user_hash', {})['timezone']).to_i 
+        #  time_zone = (ActiveSupport::TimeZone[utc_offset_in_hours]).name
+        #else
+        #  time_zone = nil
+        #end
+        #home_town = omniauth_hash.fetch('extra', {}).fetch('raw_info', {}).fetch('location', {})['name']
+        if omniauth_hash.fetch('info', {})['image']
+          photo_url = (omniauth_hash.fetch('info', {})['image']).gsub("=square","=large")   #http://graph.facebook.com/531564247/picture?type=square
         else
           photo_url = nil
         end
       rescue => ex
         logger.error("Error while parsing facebook auth hash: #{ex.class}: #{ex.message}")
-        sex       = nil
-        birthday  = nil
-        time_zone = nil
-        locale    = nil
-        home_town = nil
-        photo_url = nil  
       end
     elsif omniauth_hash['uid'].downcase.include?("google.com")
       provider  = "google"
@@ -136,6 +129,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     # The registration hash isolates the rest of the code from learning all the different structures 
     # of the omnia_hash
     registration_hash = Users::OmniauthCallbacksController.build_registration_hash(@omniauth_hash)
+    logger.debug('registration_hash.to_yaml')
     logger.debug(registration_hash.to_yaml)
 
     # Set the @user to nil 
@@ -164,9 +158,11 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     @user = authentication.user
     # save the authentication 
-    authentication.token = @omniauth_hash
+    authentication.token = @omniauth_hash[:credentials][:token]
     authentication.provider = registration_hash[:provider]
-    authentication.user_id = registration_hash[:email]
+    logger.debug('@user.inspect')
+    logger.debug(@user.inspect)
+    authentication.user_id = @user[:id]
 
     if !authentication.save
       logger.error(authentication.errors)
