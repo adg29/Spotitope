@@ -31,26 +31,51 @@
     </div>
   </div>
 </div>
+
+
+<div class="container">
+  <div class="row">
+    <div class="span12 pull-left">
+      <div class="media">
+            <% logger.debug(current_user.inspect) %>
+            <h2>Your Profile</h2>
+            <% if current_user.nil? %>
+              <ul>
+              <li>
+                <%= link_to "Login with Facebook", user_omniauth_authorize_path(:facebook) %>
+              </li>
+              <li>
+              <%= link_to "Sign in with Last.fm", user_omniauth_authorize_path(:lastfm) %>
+              </li>
+              </ul>
+            <% else %>
+              <% 
+                @auth_fb_select = current_user.authentications.select {|a| a["provider"] == "facebook"}
+                @auth_fb = @auth_fb_select[0] unless @auth_fb_select.nil? 
+              %>
+              <a class="pull-left" href="#">
+                <% if !@auth_fb[:uid].nil? %>
+                  <img src="http://graph.facebook.com/<%= @auth_fb[:uid] %>/picture?height=180&type=square" class="img-rounded media-object">
+                <% end %>
+              </a>
+              <div class="media-body">
+                <!--
+                <h4 class="media-heading"> on Facebook</h4>
+                -->
+              </div>
+            <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="container">
   <div class="row">
     <div class="span7"><%= yield %></div>
     <div class="span5" id="go_container">
       <h2>Inspired everwhere we go.</h2>
-      <h3 id="inspired_sub">
-
-      Check in with foursquare and walkman.fm
-      <% logger.debug(current_user.inspect) %>
-      <% if current_user.nil? %>
-      <ul>
-      <li>
-        <%= link_to "Sign in with Facebook", user_omniauth_authorize_path(:facebook) %>
-      </li>
-      <li>
-      <%= link_to "Sign in with Last.fm", user_omniauth_authorize_path(:lastfm) %>
-      </li>
-      </ul>
-      <% end %>
-      
+      <h3 id="inspired_sub">      
       </h3>
       <a id="foursquare_login" name="Foursquare Login">
       <img id="foursquare_button" src="/assets/fs-checkinon-white.png"/>
