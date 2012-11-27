@@ -12,7 +12,9 @@ Spotitope::Application.routes.draw do
 
   resources :authentications
 
-  match 'pages/about/*route' => 'high_voltage/pages#show', :id => 'about'
+  #match 'pages/about/*route' => 'high_voltage/pages#show', :id => 'about'
+  match "/pages/*id" => 'pages#show', :as => :page, :format => false
+
   
   root :to => 'high_voltage/pages#show', :id => 'about'
   
